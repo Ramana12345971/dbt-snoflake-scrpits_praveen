@@ -1,0 +1,3310 @@
+--3rd highest salary
+select *,
+  dense_rank()over (order by sal desc) rn
+  from emp
+  qualify rn=3 ---2975.00 
+  
+--duplicate records 
+
+--qualify
+select *,
+row_number()over(partition by id order by id) k 
+from users 
+qualify k>1; -- 2	MANYA	MANYA@GMAIL.COM	 row_number-2
+
+--unique records 
+select *,
+from users 
+qualify row_number()over(partition by id order by id)=1;
+ 
+
+ 
+DATA BUILD TOOL
+
+DATA TRANSFORMATION
+; not work in dbt
+
+RAW DATA ==> DBT ==> TRANSFORMED DATA
+
+ETL:
+E - EXTRACTING THE DATA FROM THE  DATA SOURCE
+T - TRANSFORMING THE RAW DATA
+L -LOADING THE TRANSFORMED DATA INTO DWH/SF/REDSHIFT/BQ)
+
+ELT:
+E - EXTRACTING THE DATA FROM THE  DATA SOURCE
+L- LOADING THE RAW DATA INTO THE DWH
+T- TRANSFORMING THE RAW DATA ==> TRANS
+T??
+IT IS USED TO TRANSFORM THE DATA THAT HAS BEEN ALREADY LOADED IN THE DWH.
+ITS MAILY USED FOR T-->TRANSFORMATION ITS  NOT An ETL OR ELT Tool
+
+WHY DBT ?
+--------
+coding 
+  Testing
+   Deployment 
+    Documentation
+	 Data Lineage
+	 
+DEPLOYMENT 
+----------
+MOVING THE CODE FROM ONE INSTANCE/ENVIRONMENT  TO ANOTHER ENVIRONMENT WITH HELP OF CI/CD 
+AFTER DEVELOPMENT WE CAN MOVE THE CODE THOUGH 
+VERSION CONTROL/CODE REPO (GITHUB/BITBUCKET)
+1.DEV(MODELS SNAPSHOT,MACROS)
+2.TEST
+3.UAT(User Acceptance Testing)
+4.SIT(System Integration Testing)
+5.PRE-PROD/SANDBOX
+6.PROD
+
+DOCUMENTATION:
+--------------
+AFTER DEVELOPMENT ANYTHING HAPPEN PREPARE WORD Documentation (OR) Technical documentation
+dbt docs generate
+
+DATA LINEAGE:
+-------------
+relationship depends on (multiple models) between multiple data models easily with help of {{ref}} function
+model-1 ---> model-2--->model-3
+
+
+
+find out duplicate values
+
+select id,count(*) from emp
+group by id
+having count(*)>1;
+
+model :
+  -name: emp12_t
+   columns:
+    - name:id
+	  tests:
+	  -unique
+	  -not_null
+	-name: status
+	
+ADVANTAGES OF DBT:
+=================
+DEV,
+TESTING,
+DEPLOYMENT,
+DOCU,
+DATA LINEAGE,
+MODULARITY,
+ELT DATA PIPELINES EASILY
+
+1.Easy Testing
+2.Reusable code (Macros/jinja) 
+(snowflake --UDFS,STORE PROCEDURES)
+3.CI/CD Integration
+
+
+DRY : Dont repeat yourselft same define one-time and reuse mutliple places (macros)
+
+TABLE TYPES:
+
+1.INTERNAL TABLES
+ PERMANENT TABLE (GOLD)
+ TRANSIENT Table (SILVER/BRONZE) REDUCE THE COST BY USING Intermediate/staging Tables) TT-1day 
+ TEMP TABLE
+
+2.EXTERNAL TABLES:
+
+VIEWS AND TYPES:
+---------------
+1.normal view       --> Power bi people  ---DASHBOARDS
+2.secure view       -->if you want data sharing
+3.materialized view -->Performance (pre-compute storage)
+4.Temporary View
+
+SQL ROADMAP:
+SQL COMMANDS:      FILTERING         SORTING
+------------      ----------        --------
+DDL                 FROM              Order by 
+DML                 WHERE             Distinct
+DCL                 AND               Alias
+TCL                 OR IN             Concat
+DQL                 BETWEEN           Operators 
+
+Functions         Set Operators          PATTERN
+---------         -------------         ----------
+string           UNION & UNION ALL        Like 
+Number           MINUS & INTERSECT       %--
+Date                                     RegExp
+Conversion
+Nulls           Aggregate                  Analytical 
+------          ---------                  -------------
+NVL             MIN MAX AVG SUM COUNT       Rank dense_rank
+NVL2                                        Row_number
+Coalesce                                    Lead lag
+is Null
+is Not Null
+
+Queries:     Constraints             Joins
+--------     -----------          ---------
+CTE            Unique                  inner left right full cross self
+WITH           Not null
+               primary key
+			   foregin key
+			   default
+PROJECT FLOW:
+------------
+
+ORACLE(DB) ===>ELT(FIVETRAN)==>BATCH/STREAMING ==>AWS S3/AZURE ADLS/ GCP CLOUD(DATA LAKES) ==> 
+COPY/SNOWPIPE/EXTERNAL TABLE ===> SNOWFLAKE(RAW DATA) <== DBT ==> TRANSFORMATION(SQL JINJA MACROS YML) 
+===> TRANSFORMED DATA ==>REPORTING PEOPLE ==> VIEWS ==> POWER BI 
+
+TRANSFORMED DATA ===> DS MI AL ===> FILE ==> DATA UNLOAD(MACRO) ==> COPY INTO STG FROM TABLE
+TRANSFORMED DATA ===> DIFFERENT SNOWFLAKE CLIENTS ==> DATA SHARING ===>SECURE VIEWS 
+
+SOURCE SYSTEMS 
+DATA FILES         ---->ELT(FIVETRAN) ---->S3(Copy) --->RAW DATA(SF) ----> DBT(CODING,TESTING.DEPLOY,DOCU,DATA Lineage,VERSION Control) ---> TRANSFORMED DATA ---> DASHBOARDS(PowerBI,Qlik view ,looker)
+RDBMS On-premises
+COULD DBs(sap hana,amazon redshift)
+
+
+DBT dont have any storage onlt transformation data -->storing in snowflake
+
+TESTING?
+--------
+IN DBT ---> CONFIGRATION.YML in configration file if you can create testing model ,we can apply all test cases in config.yml,its help of the test cases we call apply entire models (model_1,model_2.model_3---model_n)
+
+EMP_T 100:
+
+CTAS  : DDL + DATA + NO CONSTRAINTS + STORAGE + COMPUTE
+LIKE  : DDL + NO DATA + CONSTRAINTS + NO STORAGE + NO COMPUTE
+CLONE : DDL + DATA + CONSTRAINTS +  NO STORAGE + NO COMPUTE
+
+SNOWFLAKE TIME TRAVEL AND FAIL SAFE || TABLE TYPES IN SNOWFLAKE:
+----------------------------------------------------------------
+CREATE TABLE T5 (ID INT)
+INSERT INTO T5 VALUES(1),(2),(1)
+
+CLONE:
+-----
+CREATE TABLE T5_CLONE CLONE T5;
+-----
+CREATE TABLE T5_CLONE_CL CLONE T5_CLONE;
+
+SELECT * FROM  INFORMATION_SCHEMA.TABLE_STORAGE_METRICS
+WHERE TABLE_NAME LIKE 'T5%'
+AND TABLE_CATALOG = CURRENT_DATABASE()
+
+
+
+1.what is dbt model?
+2.what are materialization
+how to create a normal view & secure view
+how to create transient and permanent table
+how to run a model
+how to refer a model 
+various ways to run a model
+
+
+1.what is dbt model?
+data build tool
+data transformation framework
+
+it is used to trasform the data that has been already loaded in the data platform.
+REDSHIFT
+SNOWFLAKE
+DATABRICKS
+BIGQUERY
+; wont work in dbt 
+shortkey cntl+enter
+confi shortkey -- underscore_underscore(__co) -- enter
+{{
+    config(
+        materialized='table'
+    )
+}}
+select 1 id, 'ramana' name
+
+DBT MODELS
+---------
+.SQL file that contains  SELECT OR WITH CLAUSE OR CTES statements transformation logic, whenever run any models whathappend respective to tables or views created. 
+whenever we run this model --> a database object will be created.
+--whenever  run dbt model whathappend internally create view/table based on materialized property
+--whenver create any model by defalut materialization property is a normal view
+What is database object will created??
+Ans: Materialization
+
+what is Materialization?
+------------------------
+whenever i run any dbt models what types of objects needs to create in the data platform(SF,BG,REGSHIFT,SYNAPSE)
+its a DBT Strategy to create which type of object in the data platform.
+
+4 type Materialization
+1.Table
+2.View
+3.Ephemeral -- it wont create any database obejct
+4.Incremental 
+
+--by defalut materialization is a normal view materialization = 'view'
+materialization ='table' --what type table transient 
+--by defalut materialization property set to table is transient table.
+show tables;	
+create or replace transient table analytics.raw.emp12_t
+   
+    as (
+select 1 id, 'ramana' name
+    )
+whenever I run any dbt model 
+
+
+dbt manage dependence by using ref function
+it is used to take the data  that has been already loaded in the data platform.
+# In dbt, the default materialization for a model is a view. This means, when you run root model --> model/emp123 --view
+# dbt run or dbt build, all of your models will be built as a view in your data platform. 
+# The configuration below will override this setting for models in the example folder to --model/example/emp123.sql ---transient table
+# instead be materialized as tables. Any models you add to the root of the models folder will 
+# continue to be built as views. These settings can be overridden in the individual model files permanent table-->models/example/e2_permanent_tbl.sql
+
+# using the `{{ config(...) }}` macro.
+
+Project-wide → use dbt_project.yml
+	
+===> by using config  macro we can able to overwrite functionallity
+===> by defalut its create normal view we can modify two ways 1. at the dbt_project.yml and 2.model level 
+1.at the project level (dbt_project.yml):
+
+You can configure materializations for folders or all models in the project by updating the dbt_project.yml file.
+
+models:
+  my_new_project:                        # <-- replace with your project name
+    # Applies to all files under models/example/
+    example:
+      +materialized: table            # This will apply to all models by default
+    ds:
+      +materialized: view
+      +secure: view
+
+
+
+2.Now, all models in your project will be created as tables instead of views unless overridden at the model level.
+
+Model-specific → use {{ config() }}
+
+{{
+    config(
+        materialized='view',
+        secure =true
+    )
+}}
+select 1 id,'ramu' name, 1000 salary
+
+
+
+PROJECT LEVEL OR FOLDER LEVEL 
+
+MODEL LEVEL
+
+FOLDER LEVEL 
+MODULARITY --
+
+dbt_project.yml
+
+name: my_new_project      # Project name
+version: '1.0'            # Version of your dbt project
+config-version: 2         # dbt config schema version (keep as 2)
+
+profile: my_new_project   # References your profile in profiles.yml
+
+vars:                     # Variables you can use in your models/macros
+  country_name: 'Australia'
+  vwh: COMPUTE_WH
+  default_wh: DBT_WH
+  country_nm: 'India'
+
+models:                   # Model-level configuration
+  my_new_project:
+  #applies to all files under models/example/
+    example:
+      +materialized: view           # Models in models/example → views
+    sanitize:
+      +materialized: table          # Models in models/sanitize → transient tables
+    core:
+      +materialized: table
+      +transient: false             # Models in models/core → permanent tables
+    reporting:
+      +materialized: view           # Models in models/reporting → views
+    catasharing:
+      +materialized: view
+      +secure: true                 # Models in models/catasharing → secure views
+
+
+
+--CREATE FOLDER MODEL/DATASHARE
+
+dbt_project.yml
+models:
+  my_new_project:
+    # Applies to all files under models/example/
+    example:
+      +materialized: table
+    datashare:
+      +materialized: view
+      +secure: true
+
+100 models --- demo_sc -1 model , raw_sc --1 model , dev_sc -- 1 model 
+models/datashare/raw_sc --100 models 
+requirement to 1-model i want to create in 1-per_Sc
+requirement to 1-model i want to create in 1-per_Sc
+
+
+
+MATERIALIZATION PROPERTY
+
+FULL QUALIFIED NAME:
+DB_NAME.SCHEMA_NAME.OBJECT_NAME
+
+NAMESPACE:
+DB_NAME.SCHEMA_NAME
+
+what is view:
+-------------
+virtual table created on top of select query
+
+Type of Views:
+-------------
+1.NORMAL VIEW OR NON-MATERIALIZED VIEW
+2.SECURE VIEW
+3.MATERIALIZED VIEW : Materialized is occupies storage 
+4.TEMPORARY VIEW
+
+
+1.NORMAL VIEW OR NON-MATERIALIZED VIEW
+--------------------------------------
+--data fetching from base table, its store logically 
+--DELETE FROM HDFC_SUPPORT_V --DELETE statement's target must be a table DML ITS NOT SUPPORT ANY VIEWS
+
+
+SELECT * FROM HDFC_SUPPORT_V
+
+CREATE VIEW  HDFC_SUPPORT_V 
+AS 
+SELECT * FROM HDFC_BANK_T;
+
+Q:HOW to create A Normal VIEW?
+NO NEED TO MENTION
+
+{{materialized='view}}
+
+--NORMAL VIEW 
+{{
+    config(
+        materialized='view'
+    )
+}}
+select 100 emp_id
+-------------------
+
+
+--2.SECURE VIEW:
+--------------
+snowflake secure view provide enhanced data privacy and security by preventing unauthorized users from accressing the underlying data in the base tables 
+and restrict the visibility of the view definition to authorized users only.
+
+--SECURE VIEW 
+{{
+    config(
+        materialized='view',
+        secure =true
+    )
+}}
+select 1 id,'ramu' name, 1000 salary
+
+show views
+show views like 'e2_secure_sv'
+
+show tables
+show tables like 'E2_TRANSIENT_TBL'
+
+TRANSIENT TABLE/IMMEDIATE TABLE/STAGE TABLE:
+---------------------------------------------
+{{
+    config(
+        materialized='table',
+        transient =true
+    )
+}}
+select 1 id,'ramu' name, 1000 salary
+
+
+-PERMANENT TABLE:
+------------------
+{{
+    config(
+        materialized='table',
+        transient =false
+    )
+}}
+select 1 id,'ramu' name, 1000 salary
+--by defalut model name is obejct i will give my own alias ='Ramana_T'
+{{
+    config(
+        materialized='table',
+        transient = false,
+        alias='RAM_T'
+    )
+}}
+select 1 id,'ramu' name, 1000 salary
+
+show views
+show views like 'e2_secure_sv'
+
+show tables
+show tables like 'E2_TRANSIENT_TBL'
+show tables like 'e2_permanent_table'
+
+models/e2_permanent_table.sql
+{{
+    config(
+        materialized='table',
+        transient = false,
+        alias='RAM_T',
+        query_tag='DBT_Y' 
+    )
+}}
+select 1 id,'ramu' name, 1000 salary
+
+3.MATERIALIZED VIEW: 
+-------------------
+--pre-compute  result set our results are pre-calcuted and stored physcially in the snowflake
+--DML NOT PERFORM ON ANY VIEWS(NORMAL VIEW/MATERIALIZED VIEW) 
+
+DELETE FROM MV_HDFC_SUPPORT_V --DELETE operations are not allowed on materialized views
+
+SELECT * FROM  MV_HDFC_SUPPORT_V
+
+CREATE MATERIALIZED VIEW MV_HDFC_SUPPORT_V
+AS 
+SELECT * FROM HDFC_SUPPORT_T
+
+AUTOMATICALLY REFRESH SNOWFLAKE :
+-------------------------
+CREATE TABLE T6 (ID NUMBER)
+INSERT INTO T6 VALUES(1);
+
+CREATE MATERIALIZED VIEW  MV6
+AS
+SELECT * FROM T6 
+
+SELECT * FROM MV6 ---SNOWFLAKE SERVERLESS FEATURE
+
+CREATE TABLE T66 (ID1 NUMBER)
+INSERT INTO T66 VALUES(1);
+
+CREATE OR REPLACE MATERIALIZED VIEW  MV60
+AS
+SELECT * FROM T6 JOIN T66  --Invalid materialized view definition. More than one table referenced in the view definition
+
+--MV SUPPORT ONLY ONE TABLE NOT JOINS
+
+--data doesnt fetch from base table its fetch from Materialization view because pre-compute and store physcially
+--improve performance 
+
+ORACLE ==>ETL ===>AWS S3 ===> COPY INTO/SNOWPIPE/EXTERAL ==>SF ===> TRANSFORMATION ===>VIEW ===> POWER BI ===> DASHBOARDS ==> CLEINT END USER OR BUSINESS OR STAKE HOLDERS
+
+NORMAL VIEWS
+-----------
+--SECURITY
+--TO HIDE SENSITIVE INFORMATION
+--TO HIDE PORTION OF THE DATA
+--Performance
+--DATA SHARING 
+ 
+ VIEWS
+ -----
+ --hospital table DDL
+ 
+ CREATE OR REPLACE TABLE HOSPITAL_TABLE
+ (
+ PATIENT_ID INTERGER,
+ PATIENT_NAME VARCHAR,
+ billing_address varchar,
+ diagnosis varchar,
+ treatment varchar,
+ cost number(10,2)
+ );
+ 
+--a view which will be used by doctor 
+redshift
+CREATE OR REPLACE DOCTOR_VIEW
+AS
+SELECT 
+ PATIENT_ID ,
+ PATIENT_NAME ,
+ diagnosis,
+ treatment 
+from 
+  hospital_table;
+ 
+--a view which will be used by account
+
+CREATE OR REPLACE ACCOUNT_VIEW
+AS
+SELECT 
+ PATIENT_ID INTERGER,
+ PATIENT_NAME VARCHAR,
+ billing_address varchar,
+ cost 
+ from 
+   hospital_table;
+
+secure view:
+------------
+
+RBAC -- ROLE BASED ACCESS CONTROL 
+
+DCL -- DATA CONTROL LANGUAGE
+
+GRANT -- TO GIVE ACCESS  OR PRIVELEGES OR PERMISSION TO DB OBJECT_NAME
+REVOKE --TO REMOVE OR TAKE BACK
+
+GRANT USAGE ON DATABASE DB_NAME TO ROLE ROLE_NAME
+GRANT USAGE ON SCHEMA  SCHEMA_NAME TO ROLE ROLE_NAME
+GRANT SELECT ON VIEW VIEW_NAME TO ROLE ROLE_NAME
+GRANT SELECT ON VIEW VIEW_NAME_SC TO ROLE ROLE_NAME
+
+Feature                                Snowflake MATERIALIZED View                Snowflake Non-MATERIALIZED View
+
+Query mutliple tables                            NO                                           YES
+
+supoort for self-joins                           NO                                           YES
+Pre-computed dataset                            YES                                            NO
+Compute result on -the-fly                       NO                                           YES
+Query speed                                     FASTER                                       SLOWER
+compute cost                                Charged on base table update                     chaged on query 
+storage cost                                   incurs cost(
+
+SELECT * FROM  INFORMATION_SCHEMA.TABLE_STORAGE_METRIC)                                      no storage 
+suitable for complex queries                    YES                                            NO 
+Suitable for simple queries                     NO                                            YES
+
+Advantages of Snowflake Views:
+------------------------------
+Snowflake Views (Standard, Secure & Materialized Views) offers following advantages
+
+1. Views help you to write clearer, more modular SQL code
+2. Views allow you to grant access to just a portion of the data in a table(s).
+3. Materialized Views are designed to improve performance
+
+--VIEW 
+CREATE OR REPLACE VIEW customer_vw_01 AS
+SELECT
+    cust.customer_id,
+    cust.salutation || ' ' || cust.first_name || ' ' || cust.last_name AS customer_name,
+
+    CASE
+        WHEN demo.gender = 'M' THEN 'Male'
+        WHEN demo.gender = 'F' THEN 'Female'
+        ELSE 'Not Disclosed'
+    END AS gender,
+
+    CASE
+        WHEN demo.marital_status = 'M' THEN 'Married'
+        WHEN demo.marital_status = 'U' THEN 'Unmarried'
+        WHEN demo.marital_status = 'D' THEN 'Divorced'
+        WHEN demo.marital_status = 'S' THEN 'Separated'
+        ELSE 'Not Disclosed'
+    END AS marital_status,
+
+    demo.education_status,
+    cust.birth_day || '-' || cust.birth_month || '-' || cust.birth_year AS customer_dob,
+    cust.birth_country,
+
+    add.street_number || ' ' || add.street_name || ' ' || add.street_type || ' ' || add.suite_number AS full_address,
+    add.state,
+    add.country,
+
+    demo.purchase_estimate,
+    demo.credit_rating
+
+FROM customer cust
+JOIN customer_address add 
+    ON add.address_sk = cust.current_addr_sk
+JOIN customer_demographics demo 
+    ON demo.demo_sk = cust.current_demo_sk
+
+WHERE 
+    cust.salutation IS NOT NULL 
+    AND cust.first_name IS NOT NULL 
+    AND cust.last_name IS NOT NULL 
+    AND add.country IS NOT NULL;
+	
+t1-100 (99 join) 10 tables - 9(joins) one table - no join 
+
+Ex:
+T1   T2
+100  0
+INNER ==>0  LEFT JOIN ==> 100 RIGHT ==> 0 FULL ==> 100 CROSS JOIN ==>0(100*0);
+
+redshift
+
+DBT interview questions:
+-----------------------
+
+1. What will happen to previous object if materialization is changed from view to table in DBT?
+
+Answer: a. Both the View and Table will be available in DB
+
+
+If a model was previously materialized as a view, and you change it to table, DBT will create a new object (a table) the next time you run dbt run.
+
+But the old view will not be dropped, unless:
+
+You run dbt clean or dbt run --full-refresh Or you manually delete it
+
+2. If we have same model name in two folders inside praveen/dbt and models/, and we run dbt run -m modelname, what will happen?
+
+Answer: DBT will raise an error due to duplicate model names.
+
+Here are DBT interview questions with answers based on your prompt related to running models:
+
+
+3. How do you run all 100 models in a DBT project?
+
+Answer:
+
+dbt run
+
+4. How do you run only m1, m2, and m3 models?
+
+Answer:
+
+dbt run -m m1 m2 m3
+
+5. How do you run all models except m5 and m6?
+Answer:
+
+dbt run -m tag:all_models --exclude m5 m6
+OR 
+dbt run --exclude m5 m6
+
+
+6. How do you run all models in the folder praveen_dbt_trainer/?
+
+Answer:
+
+dbt run -m praveen_dbt_trainer
+OR
+dbt run -m praveen_dbt_trainer.*
+
+7. What are the various ways to run DBT models?
+
+Answer: dbt run -m model_name
+        dbt run --select model_name
+		dbt run -model model_name
+
+
+first go to dbt_project.yml
+1.DBT_PROJECT.YML (CONFIGRATION DETAILS)
+2.Profile.yml = 'defalut' (dataplatform connection/schema details)
+3model_paths:["models"]
+COMPILE +EXECUTING THE MODEL IN DATA PLATFORM.
+ACCOUNT DETAILS
+USERNAME AND PWD
+DB SC WH ROLE
+
+STEPS:
+1.dbt_project.yml configuration details
+2.defalut setting profile setting(dbt cloud)
+ Connection details
+ profile: 'default'
+ Snowflake data platform
+ development envinorment
+ account details
+ role
+ db sc  warehouse
+ username and pwd
+3.model_paths:["models"] emp21.sql
+it will load the model 
+before the running compile model (any errors happen in any compilation error are there) &
+execute the model (before executing it require materialization property)
+by defalut ==> materialization property
+
+models:
+  my_new_project:
+    # Applies to all files under models/example/
+    example:
+      +materialized: table (+ transient table)
+
+
+
+4. take the model 
+compile and run the module
+materialization property
+database.schema.module_name
+
+DBT Alias ==> remame to model my own 
+DBT QUERY_TAG ='DBT_J' ==> Track all the queries 
+
+REFER THE MODEL
+REF Function
+
+select * from {{ref('model_name)}}
+
+multiple models create dependence by using ref function e21.sql(upstream)-->e21_stage.sql(current_model) --->e21_core.sql(downstream)
+
+select * from {{ref('e21.sql')}} --model/e21_stg.sql 
+select * from {{ref('e21_stg.sql')}} --model/e21_core.sql 
+
+--if you run upstream e21.sql-->(dbt run -m+e21_stage.sql)
+--if you run dependency downstream e21_core.sql-->(dbt run -m e21_stage.sql+) 
+--if run upstream & downstream and middle model (dbt run -m+e21_stage+)
+--if run parallel  (dbt run -m m1 m2 m3)
+
+1.if run all the models (100 models) --- dbt run
+2.run only m1,m2 and m5 models -- dbt run -m m1 m2 m5 (select col1,col3,col5 from employee)
+3.run all models except m4 and m5
+snowflake
+---------
+select * exclude(col98,,col99) from employee;
+in dbt
+-----
+dbt run exclude m4
+dbt run exclude m4 m5 m6
+4. run all models in  the example/ds folder/i want to run paticular folder -- dbt run -m example
+5. various ways to  run/Execute models
+
+dbt run -m model_name
+dbt run -model model_name
+dbt run -s model_name
+dbt run --select model_name
+
+DBT DEPENDENCIES:
+-----------------
+Requirement: whenever  I run main_model (snowflake) down-steam model (dbt) to be execute
+when you run a main Snowflake table or model, the dependent downstream dbt models also automatically execute. 
+snowflake.sql(main_model)
+
+select 'snowflake' cource
+
+dbt_model.sql (down-steam model)
+
+select * from {{ ref('snowflake') }}
+
+whenever run main model down-stream dbt models also automatically execute.
+
+dbt run --select snowflake+
+
+DBT Alias
+---------
+{{
+    config(alias='praveen_view')
+}}
+select 1 id, 'praveen' name
+
+DBT QUERY_TAG:  to identify to track our queries exited from dbt models
+--------------
+{{
+    config(
+        materialized='table',
+        query_tag='dbt_qt'
+    )
+}}
+select 1 id , 'gani' name
+
+
+what is DBT seeds
+-----------------
+--seeds are csv files in the dbt project
+--transform csv files data into datawarehouse(tables)
+--small data sets (mbs)
+--static data(data not be changed incremental data will be change)
+Here's a clear summary of the use cases for dbt seeds based on your image content:
+
+
+---
+
+✅ Best Use Cases for dbt Seeds
+
+Seeds are ideal for small, static datasets that:
+
+Change infrequently
+
+Need version control
+
+Can be stored in CSV files
+
+Common examples:
+🌍 Country codes → country names mapping
+📧 List of test emails to exclude
+👤 Employee account IDs or reference data
+❌ Not Recommended for dbt Seeds
+
+Avoid using seeds for:
+
+🔄 Frequently changing raw/exported data
+
+🔐 Sensitive production data (e.g., PII, passwords)
+
+📦 Large datasets — seeds load entirely into memory and can be inefficient
+
+dbt seed -m seed_name
+
+======================================================================================
+
+dbt seed -m seed_name
+
+how to refer dbt seed:
+----------------------
+
+select * from {{ ref('seed_name') }}
+
+select * from {{ ref('em8_s') }} s join {{ ref('emp_s') }} h
+join s.id=h.id
+
+
+
+
+Real time use cases of seeds
+----------------------------
+--look up tables
+--zip codes
+--currency and countery codes
+--employee account Ids
+
+1ST TIME:
+--------
+CREATE + INSERT +COMMIT
+
+2ND TIME: add row 
+--------
+TRUNCATE + COMMIT
+INSERT + COMMIT
+
+
+SELECT * FROM DBT_DEV.DBT_DEV_SC.country
+
+account_num,account_name
+00001,abc
+00002,cde -- account_num dbt dont treat number, its treat varchar
+
+SELECT ACCOUNT_NUM, LPAD(ACCOUNT_NUM,5,0),'0000'||ACCOUNT_NUM 
+FROM ACCOUNT_DETAILS
+
+when we want  to accommodate any schema/DDL changes We should go for  -- full-refresh concept
+
+seed/seeds.yml
+seeds:
+  - name: account_details
+    config:
+      column_types:
+        account_num: varchar
+      
+  
+dbt seed --full-refresh -m seed_name
+
+drop
++
+create
+
+account_num varchar treat 
+
+I want to put the size
+
+seeds:
+  - name: account_details
+    config:
+      column_types:
+        account_num: varchar(5)
+      
+simply I havin one more entry/add one more row
+simply run the 
+dbt seed -m seed_name
+
+account_num,account_name
+00001,abc
+00002,cde
+00003,fhg -- new row
+
+truncate + insert data
+
+suppose you have addedd one more column is 'city'
+
+
+account_num,account_nam,city
+00001,abc,hyd
+00002,cde,chn
+00003,fhg,bnglr
+
+dbt seed -m seed_name -- its get error invalid identifier 'city'
+
+insert into DBT_DEV.DBT_DEV_SC.account_details (account_num, account_name, city) values (1,1,1)
+Error: invalid identifier 'CITY' (line 221)
+I want to --full -refresh
+
+      
+country_code,country_name --country_code is defalut interger
+0001,ind
+0002,ind
+00003,jpy
+
+
+seeds:
+  - name: currency
+    config:
+      column_types:
+        country_code: varchar
+		
+dbt seed --full-refresh -m currency
+
+details
+country_code, --country_code is defalut interger to chaged varcharS
+
+select * from {{ ref('currency') }}
+
+
+COUNTRY_CODE COUNTRY_NAME
+0001            ind
+0002            ind
+00003           jpy
+
+DBT SOURCES: FULL QUALIFIED NAME
+-----------
+version: 2
+
+sources:
+  - name: dem_db                # Source name (used in dbt as source('dem_db', 'T1'))
+    database: P1        # Snowflake Database name
+    schema: demo_sc          # Snowflake Schema name
+    tables:
+      - name: T1                 # Table name in the source schema
+        description: "Source table for customer data"
+
+select * from {{ source('dem_db', 'T1') }} -- go to compile -- select * from P1.demo_sc.T1 data coming from dbt not snowflake
+its avoids full qualified in real time we can go for sources.yml
+select *  from DBT_DEV.DBT_DEV_SC.T1---  models/t1_stage.sql
+select * from {{ source('dem_db', 'T1') }} ---  models/t1_stage.sql
+
+my data is  there in different  schemas in snowflake
+
+raw_sc
+demo_sc;
+sap_sc
+
+1st layer : raw_sc 
+first layer only access the data using source.yml
+2nd layer & 3rd layer : demo_sc & sap_sc
+by using ref function
+
+--source name also unique
+dem_db = DEMO_DB.DEMO_SC.T1
+
+one database and different/multiple schemas only tables not views
+different souce database (AADHAR_DB,AADHAR_SC,DEMO_DB,DEMO_SC) and schemas and data loaded in only target database and schemas(DBT_DEV , DBT_DEV_SC)
+
+###dem_db = DEMO_DB.DEMO_SC.T1 -- full qualified automatically
+sources.yml
+
+sources:
+  - name: a01_db               # First source
+    database: demo_database
+    schema: DBT_DEV_SC
+    tables:
+      - name: T1
+        description: "Source table for employee data"
+  - name: src_db --unique         # Source name (used in dbt as source('dem_db', 'T1'))
+    database: dev_db        # Snowflake Database name
+    schema: hr_sc          # Snowflake Schema name
+    tables:
+      - name: T1                 # Table name in the source schema
+        description: "Source table for customer data"
+
+  - name: a02_db               # First source
+    database: demo_database
+    schema: DBT_DEV_SC
+    tables:
+      - name: T1
+        description: "Source table for employee data"
+
+  - name: a03_db               # Second source
+    database: AADHAR_DB
+    schema: AADHAR_SC
+    tables:
+      - name: EMPLOYEE_T
+        description: "Source table for customer data"
+
+Macros:
+------
+1.its are piece of SQL code that can be reused and defined one-time we can able to and reusage mutliple places.
+2.UDFS
+3.code reusablity
+
+--calling macro
+dbt run-operation macro_name
+
+
+Syntax:
+--------
+{% macro macro_name (arg1,arg2)%}
+   --logic
+{% endmacro %}
+
+----------------------------------------------
+
+macros/sum_of_2_nums.sql
+
+{% macro sum_of_2_nums(num1, num2) %}
+   {{ num1 }}+{{num2 }}
+{% endmacro %}
+
+select {{ sum_of_2_nums(10,20) }}
+
+--sum_of_3_nums
+{% macro sum_of_3_nums(num1, num2,num3) %}
+   {{ num1 }}+{{num2 }}+{{num3}}
+{% endmacro %}
+
+select {{ sum_of_3_nums(10,20,30) }}
+--dynamic 
+
+
+CREATE DATABASE AADHAR_DB;
+CREATE SCHEMA AADHAR_DB.AADHAR_SC
+
+
+CREATE TABLE EMPLOYEE_T (ID NUMBER,
+                         FNAME VARCHAR,
+                         MNAME VARCHAR,
+                         LNAME VARCHAR,
+                         GENDER VARCHAR)
+INSERT INTO  EMPLOYEE_T VALUES(1,'Ramana','Manya','b','M');
+INSERT INTO  EMPLOYEE_T VALUES(1,'Sasi','Pasu','b','M');
+INSERT INTO  EMPLOYEE_T VALUES(1,'Seeta','Ram','b','F');
+
+select * from EMPLOYEE_T -- snowflake/dbt
+SELECT * FROM AADHAR_DB.AADHAR_SC.EMPLOYEE_T --> FUL QUALIFIED OR SOURCE.YML
+
+SELECT GENDER,CASE WHEN GENDER ='M' THEN 'MALE'
+                   WHEN GENDER ='F' THEN 'FEMALE' END G
+FROM EMPLOYEE_T;
+
+{% macro case_macro(gen) %}
+    case when {{gen}}= 'M' then 'MALE'
+         when {{gen}}= 'F' then 'FEMALE' END G
+
+{% endmacro %}
+
+sources.yml
+ 
+ - name: a02_db               # First source
+    database: demo_database
+    schema: DBT_DEV_SC
+    tables:
+      - name: T1
+        description: "Source table for employee data"
+
+  - name: a03_db               # Second source
+    database: AADHAR_DB
+    schema: AADHAR_SC
+    tables:
+      - name: EMPLOYEE_T
+        description: "Source table for customer data"
+
+select * from {{ source('a1_db', 'T1') }}
+
+select * from {{ source('a2_db', 'EMPLOYEE_T') }}
+
+macros/case_macro.sql
+
+{% macro case_macro(gen) %}
+    case when {{gen}}= 'M' then 'MALE'
+         when {{gen}}= 'F' then 'FEMALE' END G
+
+{% endmacro %}
+
+
+SELECT GENDER,
+ CASE WHEN GENDER ='M' THEN 'MALE'
+     WHEN GENDER ='F' THEN 'FEMALE' END G 
+FROM {{ source('a2_db', 'EMPLOYEE_T') }} --  full qualified dynamically.
+
+GENDER  G
+------  --- 
+M      MALE
+M      MALE
+F      FEMALE
+
+
+SELECT GENDER,
+ CASE WHEN GENDER ='M' THEN 'MALE'
+     WHEN GENDER ='F' THEN 'FEMALE' END G,
+          {{case_macro('gender')}}
+FROM {{ source('a2_db', 'EMPLOYEE_T') }}
+
+
+
+GENDER  G           G_2
+------  ---        -----
+M      MALE        MALE
+M      MALE        MALE
+F      FEMALE      FEMALE
+
+case_macro.sql
+
+{% macro case_macro(gen) %}
+    case when {{gen}}= 'M' then 'MALE'
+         when {{gen}}= 'F' then 'FEMALE' END
+	{% endmacro %}
+	 
+
+Code reusablity:
+------------------
+SELECT GENDER,
+          {{case_macro('gender')}}
+FROM {{ source('a2_db', 'EMPLOYEE_T') }}
+
+--Column missing specification (CASE WHEN GENDER= 'M' THEN 'MALE' WHEN GENDER= 'F' THEN 'FEMALE' END) is not correct.
+
+GENDER          CASE WHEN GENDER= 'M' THEN 'MALE' WHEN GENDER= 'F' THEN 'FEMALE' END
+-------         ----------------------------------------------------------------------
+M
+M
+F
+
+
+SELECT GENDER,
+          {{case_macro('gender')}} gen --column missing specification
+FROM {{ source('a2_db', 'EMPLOYEE_T') }}
+
+TASKS:
+------
+1.multiplication of 2 mumbers
+
+2.regex_replace 
+
+1.multiplication of 2 mumbers
+
+macros/mulx_of_2_nums.sql
+
+{% macro mulx_of_2_nums(num1, num2) %}
+   {{ num1 }}*{{num2 }}
+{% endmacro %}
+
+select {{ mulx_of_2_nums(10,20) }} --s200
+
+2.regex_replace 
+
+with source_data as (
+    select *
+    from {{ source('raw', 'employee_data') }}
+),
+
+cleaned as (
+    select
+        regexp_replace(emp_id, '[^0-9]', '') as emp_id_cleaned,
+        emp_id as emp_id_raw
+    from source_data
+)
+
+select *
+from cleaned
+
+models/soure.yml
+---------------
+version: 2
+
+sources:
+  - name: raw
+    description: "Raw source data from operational systems"
+    database: your_database_name   # Replace with actual database name
+    schema: your_raw_schema        # Replace with your raw schema (e.g., RAW)
+
+    tables:
+      - name: employee_data
+        description: "Raw employee data with unclean EMP_ID values"
+        columns:
+          - name: emp_id
+            description: "Employee ID (may contain special characters or duplicates)"
+			
+---------
+-.sql : 
+ex: SELECT REGEXP_REPLACE('A123B456C', '[0-9]', 'X') AS result;
+-- Output: AXXXBXXXC
+ex:1
+SELECT REGEXP_REPLACE('Hello@2024!', '[^a-zA-Z0-9]', '') AS clean_text;
+--Output: Hello2024
+
+{{ config(
+    materialized='incremental',
+    unique_key='emp_id_cleaned'
+) }}
+
+with staged as (
+    select
+        regexp_replace(emp_id, '[^0-9]', '') as emp_id_cleaned,
+        current_timestamp() as updated_at
+    from {{ source('raw', 'employee_data') }}
+)
+
+select *
+from staged
+
+{% if is_incremental() %}
+    where emp_id_cleaned not in (
+        select emp_id_cleaned from {{ this }}
+    )
+{% endif %}
+
+
+{% macro clean_emp_id(column_name) %}
+    regexp_replace({{ column_name }}, '[^0-9]', '')
+{% endmacro %}
+
+select
+    {{ clean_emp_id('emp_id') }} as emp_id_cleaned
+from ...
+
+
+SORUCE.YML
+-----------
+version: 2
+
+models:
+  - name: emp_incremental
+    description: "Incremental cleaned employee data"
+    columns:
+      - name: emp_id_cleaned
+        tests:
+          - unique
+          - not_null
+	
+version: 2 
+
+sources:
+  - name: src_db
+    database: DEMO_DB
+    schema: DEMO_SC
+    tables:
+      - name: SALES_T
+        description: "Sales transaction table from DEMO_DB"
+      - name: COUNTRY_T
+        description: "Country reference table from DEMO_DB"
+
+  - name: rms_db
+    database: RMS_DEV_DB
+    schema: DEMO_SC
+    tables:
+      - name: SALES_T
+        description: "Sales transaction table from RMS_DEV_DB"
+      - name: COUNTRY_T
+        description: "Country reference table from RMS_DEV_DB"
+      - name: sales_details
+        description: "Detailed sales table from RMS_DEV_DB"
+		
+Example_2:
+---------
+
+CREATE DATABASE AADHAR_DEV_DB
+CREATE SCHEMA AADHAR_DEV_SC
+
+USE DATABASE AADHAR_DEV_DB
+USE SCHEMA AADHAR_DEV_SC
+
+-- Create a table with multiple columns
+CREATE TABLE PERSONS (
+    id INT,
+    name VARCHAR(50),
+    gender CHAR(1),
+    age INT,
+    city VARCHAR(50)
+);
+
+-- Insert 10 rows into the table
+INSERT INTO PERSONS (id, name, gender, age, city) VALUES
+(1, 'John',    'M', 28, 'New York'),
+(2, 'Alice',   'F', 25, 'Los Angeles'),
+(3, 'David',   'M', 30, 'Chicago'),
+(4, 'Sophia',  'F', 22, 'Houston'),
+(5, 'Michael', 'M', 35, 'Phoenix'),
+(6, 'Emma',    'F', 27, 'Philadelphia'),
+(7, 'Chris',   'M', 24, 'San Antonio'),
+(8, 'Olivia',  'F', 29, 'San Diego'),
+(9, 'Daniel',  'M', 32, 'Dallas'),
+(10,'Lily',    'F', 26, 'San Jose');
+
+-- View all rows
+SELECT * FROM AADHAR_DEV_DB.AADHAR_DEV_SC.PERSONS;
+
+
+SELECT GENDER, CASE WHEN GENDER='M' THEN 'MALE'
+                    WHEN GENDER='F' THEN 'FEMALE' END GEN
+FROM AADHAR_DEV_DB.AADHAR_DEV_SC.PERSONS;
+
+DBT:
+
+sourcess.yml
+sources:
+  - name: srcc          # Source name
+    database: AADHAR_DEV_DB    # Snowflake database name
+    schema: AADHAR_DEV_SC  # Snowflake schema name
+    tables:
+      - name: PERSONS   # Table name in source schema
+
+select * from {{ source('srcc', 'PERSONS') }} --FROM DBT SOURCE.YML
+
+
+macro/case_gen_macro.sql
+{% macro case_gen_macro(gen) %}
+    case when {{gen}}='M' then 'MALE' 
+        when {{gen}}='F' then 'FEMALE' END 
+{% endmacro %}
+
+model/persons.sql --store permanent in obejct/models
+select gender,{{case_gen_macro('gender')}} gen
+ from {{ source('srcc', 'PERSONS') }}
+ 
+TASKS:
+-----
+
+SELECT INITCAP(LNAME || '. ' || MNAME || ' ' || FNAME) AS FULL_NAME
+FROM AADHAR_DB.AADHAR_SC.EMPLOYEE_T;
+
+FULL_NAME
+B. Manya Ramana
+B. Pasu Sasi
+B. Ram Seeta
+
+DBT
+macro/initcap_macro.sql
+
+{% macro initcap_macro(l,m,f) %}
+    INITCAP({{l}} || '. ' || {{m}} || ' ' || {{f}})
+{% endmacro %}
+
+model/stage_employees.sql
+{{
+    config(
+        materialized='table',
+        transient=false,
+        alias='pp',
+        query_tag='dbt_k'
+
+    )
+}}
+SELECT GENDER,
+          {{case_macro('gender')}} gen,
+          {{initcap_macro('lname','mname','fname')}} full_name
+FROM {{ source('a2_db', 'EMPLOYEE_T') }}
+
+dbt run -m stage_employees
+
+select * from DBT_DEV.DBT_DEV_SC.pp
+
+GENDER	GEN	FULL_NAME
+M	MALE	B. Manya Ramana
+M	MALE	B. Pasu Sasi
+F	FEMALE	B. Ram Seeta    
+
+
+select regexp_replace('1234*&&***--','[^0-9]') cln
+
+
+syntax: clone
+------
+CREATE OR REPLACE DATABASE NEW_DB CLONE OLD_DB
+
+CREATE OR REPLACE DATABASE NEW_AADHAR_DEV_DB CLONE AADHAR_DEV_DB
+
+SELECT {{macro_name()}} 
+
+--when we have ddl into macro --- CREATE(DDL) & DML  --macro
+
+dbt run-operation macro_name
+
+--create table
+
+create or replace  table t6(id number) --- macro not model 
+
+macros/clone_table.sql
+
+
+{% macro clone_table(args) %}
+   {% set abc %}
+    create or replace table t6(id number);
+    {% endset %}
+    {% do run_query (abc) %}
+{% endmacro %}
+
+dbt run-operation clone_table
+
+show tables
+select * from DBT_DEV.DBT_DEV_SC.t6
+
+Remove(Trim) spaces & Empty string to Null:
+-------------------------------------
+
+
+CREATE OR REPLACE TABLE EMP_T (NAME VARCHAR);
+
+INSERT INTO EMP_T VALUES('MANYA');
+INSERT INTO EMP_T VALUES('     RAMANA');
+INSERT INTO EMP_T VALUES(NULL);
+INSERT INTO EMP_T VALUES('');
+INSERT INTO EMP_T VALUES('Ram     ')
+
+select * from DBT_DEV.DBT_DEV_SC.EMP_T;
+
+Select *,trim(name) from EMP_T;
+
+Select *,
+       case when trim(name)='' then null
+      ELSE trim(name)  END TR FROM DBT_DEV.DBT_DEV_SC.EMP_T;
+
+DBT 
+macro/trim_macro.sql
+
+{% macro trim_macro(col) %}
+    case when ({{col}})='' then null
+    else trim({{col}}) end
+{% endmacro %}
+
+--call model 
+
+SELECT 
+    *, 
+    CASE 
+        WHEN TRIM(name) = '' THEN NULL
+        ELSE TRIM(name) 
+    END AS j,
+    {{ trim_macro('name') }} AS k
+FROM EMP_T
+
+OR 
+models/trim.sql
+{{
+    config(
+        materialized='table',
+        transient = false,
+        query_tag= 'dbt_trim'
+    )
+}}
+SELECT 
+    *, 
+    {{ trim_macro('name') }} AS k
+FROM EMP_T
+
+dbt run -m trim
+
+select * from DBT_DEV_SC.trim
+
+Materialized View creation:
+---------------------------
+with help of models we cant create views and we can able to create MV by using macro 
+directly we cant able to create mv, we can able to create mv by using macros.
+-- Step 1: Create the table
+CREATE OR REPLACE TABLE PRAV_DBT_TABLE (
+    COURSE_ID NUMBER,
+    COURSE_NAME VARCHAR
+);
+
+-- Step 2: Insert values into the table
+INSERT INTO PRAV_DBT_TABLE VALUES (1, 'SQL');
+INSERT INTO PRAV_DBT_TABLE VALUES (2, 'SNOWFLAKE');
+INSERT INTO PRAV_DBT_TABLE VALUES (3, 'DBT');
+-- Step 3: Select data from the table
+select * from PRAV_DBT_TABLE;
+--step:3 create the materialized view
+CREATE OR REPLACE MATERIALIZED VIEW MV_PRAV
+AS
+select * from PRAV_DBT_TABLE;
+--Step 4: list of views 
+SHOW VIEWS LIKE 'MV_PRAV'  -- empty 
+
+DBT 
+directly we cant execute create statement/DDL by using macro we can execute by using set variable. snowflake -- Execute immediate(do run_query);
+{% macro macro_create_vm(args) %}--
+    {% set mv_m %}
+    CREATE OR REPLACE MATERIALIZED VIEW MV_PRAV
+    AS
+    select * from PRAV_DBT_TABLE;
+    {% endset%}
+    {% do run_query (mv_m) %}
+{% endmacro %}
+
+dbt run-operation macro_create_vm
+
+--Step 4: list of views 
+SHOW VIEWS LIKE 'MV_PRAV'  -- data 
+
+
+--create database 
+{% macro create_db_macro(args) %}
+     {% set create_db %}
+    create or replace database dev1;
+    {% endset%}
+    {% do run_query (create_db) %}
+{% endmacro %}
+
+---database backup (clone)
+--entire ddl we keep in variable(clone_db) and run variable directly we cant able to perform ddl statement(create) inside macro, we keep in set variable and run_query
+
+macro/macro_clone.sql
+--static 
+{% macro macro_clone(args) %}
+   {% set clone_db %}
+    CREATE OR REPLACE DATABASE Pre_AADHAR_DEV_DB CLONE AADHAR_DEV_DB;
+    {% endset %}
+    {% do run_query (clone_db)%}
+{% endmacro %}	
+
+dbt run-operation macro_clone
+
+
+-->static
+{% macro macro_clone(args) %}
+   {% set clone_db %}
+    CREATE DATABASE NEW_DB;
+    {% endset %}
+    {% do run_query (clone_db)%}
+{% endmacro %}	
+
+dbt run-operation macro_clone 
+
+macro/macro_clone.sql
+{% macro macro_clone_db(args) %}
+   {% set clone_db %}
+    CREATE OR REPLACE DATABASE Pre_AADHAR_DEV_DB CLONE AADHAR_DEV_DB;
+    {% endset %}
+    {% do run_query (clone_db)%}
+{% endmacro %}	
+
+dbt run-operation macro_clone
+
+--dynamic
+macro/macro_clone_dy.sql
+
+{% macro macro_clone_db(src_db,trg_db) %}
+   {% set clone_db %}
+    CREATE OR REPLACE DATABASE {{src_db}} CLONE {{trg_db}};
+    {% endset %}
+    {% do run_query (clone_db)%}
+{% endmacro %}	
+
+macro  that contains  argument;
+
+dbt run-operation macro_name
+dbt run-operation macro_name --args '{"key1":"val1"}'
+
+--DYNAMIC DATABASE CLONE BY USING ARGS
+{% macro dynamic_db_cln(src_db, trg_db) %}
+    {% set clone_db %}
+        CREATE OR REPLACE DATABASE {{trg_db}} CLONE {{src_db}};
+    {% endset %}
+    {% do run_query(clone_db) %}
+{% endmacro %}
+
+dbt run-operation dynamic_db_cln --args '{"src_db": "AADHAR_DEV_DB", "trg_db": "DB_DEV_CLONE01"}'
+
+TASK:
+DEV_DB -- DATABASE
+DEV_SC ===> 10 TABLES
+DEMO_SC ===>10 TABLES
+RAW_SC ===> 10 TABLES
+
+1.By using  DBT backup  Entire database -- we can use clone
+
+2. By using  DBT Take  backup of  T1 T2 T3 Specific  Tables  from RAW_SC 
+
+Note: make dynamic approach
+
+
+-------------praveen ----------------
+CREATE DATABASE NEW_DB;
+CREATE SCHEMA NEW_DB_SC;
+
+CREATE TABLE T1 (ID NUMBER);
+CREATE TABLE T2 (ID NUMBER);
+CREATE TABLE T3 (ID NUMBER);
+CREATE TABLE T4 (ID NUMBER);
+CREATE TABLE T5 (ID NUMBER);
+
+CREATE SCHEMA DEMO_SC CLONE DEV_SC;
+CREATE SCHEMA RAW_SC CLONE DEV_SC;
+
+CREATE TABLE TRG_DB.TRG_SC.T1 CLONE SRC_DB.SRC_SC.T1;
+CREATE TABLE TRG_DB.TRG_SC.T2 CLONE SRC_DB.SRC_SC.T2;
+CREATE TABLE TRG_DB.TRG_SC.T3 CLONE SRC_DB.SRC_SC.T3;
+
+
+create database trg_db and schema:    
+---------------------------------
+--static 
+
+{% macro create_db_tables_macro(trg_db,trg_sc) %}
+   {% set create_db %}
+    CREATE OR REPLACE DATABASE {{trg_db}};
+    {% endset %}
+    {% do run_query (create_db)%}
+--create schema trg_sc;
+  {% set create_sc %}
+   CREATE OR REPLACE SCHEMA {{trg_db}}.{{trg_sc}}; --namespace
+   {% endset %}
+  {% do run_query (create_sc)%}
+
+  {% set create_sc %}
+CREATE TABLE TRG_DB.TRG_SC.T1 CLONE NEW_DB.RAW_SC.T1;
+CREATE TABLE TRG_DB.TRG_SC.T2 CLONE NEW_DB.RAW_SC.T2;
+CREATE TABLE TRG_DB.TRG_SC.T3 CLONE NEW_DB.RAW_SC.T3;
+{% endset %}
+{% do run_query (create_sc)%}
+ {% endmacro %}	
+dbt run-operation create_db_tables_macro --args '{"trg_db":"TRG_DB","trg_sc":"TRG_SC"}'
+
+--dynamic:
+-- macros/clone_db_tables_mco.sql
+{% macro clone_db_tbl(trg_db, trg_sc, src_db, src_sc, table_list) %}
+  -- Step 1: Create target database
+  {% set cl_db %}
+    CREATE OR REPLACE DATABASE {{ trg_db }};
+  {% endset %}
+  {% do run_query(cl_db) %}
+
+  -- Step 2: Create target schema under the target DB
+  {% set cl_sc %}
+    CREATE OR REPLACE SCHEMA {{ trg_sc }};
+  {% endset %}
+  {% do run_query(cl_sc) %}
+
+  -- Step 3: Clone tables one by one
+  {% for tbl in table_list %}
+    {% set source_table = src_db ~ '.' ~ src_sc ~ '.' ~ tbl %}
+    {% set target_table = trg_db ~ '.' ~ trg_sc ~ '.' ~ tbl %}
+    {% set cl_tb %}
+      CREATE OR REPLACE TABLE {{ target_table }} CLONE {{ source_table }};
+    {% endset %}
+    {% do run_query(cl_tb) %}
+  {% endfor %}
+{% endmacro %}
+
+
+
+dbt run-operation clone_db_tbl --args 
+"{'trg_db':'TRG_DB',
+  'trg_sc':'TRG_SC',
+  'src_db':'NEW_DB',
+  'src_sc':'RAW_SC',
+  'table_list':['T1','T2','T3','T5']
+}"
+
+dbt run-operation clone_db_tables_mco --args '{"trg_db":"TRG_DB","trg_sc":"TRG_SC","src_db": "NEW_DB","src_sc": "RAW_SC","tab_list":["T1", "T2","T3"]}'
+
+
+-- macros/data_loading_macro.sql
+
+{% macro data_loading_macro(target_table, stage_location) %}
+    
+    {% set copy_statement %}
+        COPY INTO {{ target_table }}
+        FROM {{ stage_location }}
+        FILE_FORMAT = (TYPE = 'PARQUET')  -- adjust based on your file type
+        FORCE = TRUE
+        ON_ERROR = CONTINUE;
+    {% endset %}
+
+    {% do run_query(copy_statement) %}
+
+{% endmacro %}
+
+
+COPY INTO TABLE :
+------------------
+LOCALMACHINE ==>  AWS S3 BUCKET ==> STAGES ==> COPY INTO ==> SNOWFLAKE TABLE
+-->dbt we are loading data from aws s3 to snowflake table by using dbt macro copy command 
+CREATE TRANSIENT TABLE COURCE_DETAILS
+(
+COURSE_ID NUMBER,
+COURSE_NAME VARCHAR,
+TRAINER VARCHAR
+)
+
+SELECT * FROM COURCE_DETAILS;
+
+
+
+CREATE TRANSIENT TABLE COURCE_DETAILS
+(
+COURSE_ID NUMBER,
+COURSE_NAME VARCHAR,
+TRAINER VARCHAR
+)
+
+SELECT * FROM COURCE_DETAILS;
+
+
+
+CREATE OR REPLACE FILE FORMAT CSV_PIPE_FILEFORMAT
+TYPE = CSV
+FIELD_DELIMITER = ','
+SKIP_HEADER = 0
+NULL_IF = ('NULL','Null','null') 
+FIELD_OPTIONALLY_ENCLOSED_BY = '"'        
+EMPTY_FIELD_AS_NULL = TRUE;
+
+
+
+CREATE OR REPLACE STAGE AWS_PIPE_CSV_STAGE
+STORAGE_INTEGRATION = AWS_S3_INT
+URL = 's3://learn22cloud-snowflake/loadingdata/pipe/csv/'
+FILE_FORMAT = CSV_PIPE_FILEFORMAT;
+
+list @AWS_PIPE_CSV_STAGE
+
+SELECT * FROM COURCE_DETAILS; -- 0 ROWS
+
+COPY INTO COURCE_DETAILS
+FROM @AWS_PIPE_CSV_STAGE
+ON_ERROR = CONTINUE
+FORCE = TRUE;
+
+DBT
+
+{% macro copy_from_stage(args) %}
+  {% set copy_cmd %}
+    COPY INTO COURCE_DETAILS
+    FROM @AWS_PIPE_CSV_STAGE
+    ON_ERROR = CONTINUE
+    FORCE = TRUE;
+   {% endset %}
+   {% do run_query(copy_cmd) %}
+{% endmacro %}
+
+dbt run-operation copy_from_stage
+
+SELECT * FROM COURCE_DETAILS; -- 5 ROWS
+
+DBT Customization and variables:
+================================
+by defalut whenever I run  any model our obejct create in the defalut target database and target schema 
+if i want to create my obejct my own schema go for customized database obejct generate_schema
+
+select 1 id 
+
+defalut schema : dbt_dev_sc
+
+custom_schema = pr_sc
+ 
+ dbt_dev_sc|| '_'|| pr_sc 
+ 
+ model/tesr1s.sql
+ {{
+    config(
+        schema='pr_sc'
+    )
+}}
+select 1 id
+
+dbt run -m tesr1
+
+DBT_DEV.DBT_DEV_SC_pr_sc.tesr1 ---DBT_DEV_SC_pr_sc
+
+--handle only customized schema not defalut schema 
+	
+macro/generate_schema_name.sql
+
+ {%macro  generate_schema_name(custom_schema_name,node) %}
+ {{custom_schema_name}}
+  {%endmacro%}
+  
+ dbt run -m tesr1
+
+create or replace   view DBT_DEV.pr_sc.tesr1
+  
+  as (
+    
+select 1 id
+  )
+  
+model/test1.sql 
+
+select 1 id 
+
+dbt run -m test1
+
+result 
+------
+create or replace   view DBT_DEV.none.test1
+  
+  as (
+    
+select 1 id
+  )
+
+--defalut schema
+
+macro/generate_schema_name.sql
+-------------------------------------------------------------
+{% macro generate_schema_name(custom_schema_name, node) %}
+  {% if custom_schema_name is not none %}
+    {{ custom_schema_name }}
+  {% else %}
+    {{ target.schema }}
+  {% endif %}
+{% endmacro %}
+--------------------------------------------------------------
+select '{{ target.schema }}'
+custom_schema_name = none = none = false ==> go for else condition
+dbt run -m test1
+
+result 
+------
+create or replace   view DBT_DEV.DBT_DEV_SC.test1
+  
+  as (
+    
+select 1 id
+  )
+
+
+----------------
+
+
+ model/tesr1s.sql
+ {{
+    config(
+        schema='pr_sc'
+    )
+}}
+select 1 id
+
+dbt run -m custom_sc_model.SQL
+
+{% macro generate_schema_name(custom_schema_name, node) %}
+  {% if custom_schema_name is not none %}
+    {{ custom_schema_name }}
+  {% else %}
+    {{ target.schema }}
+  {% endif %}
+{% endmacro %}
+
+------dbt run -m custom_sc_model.SQL
+
+{% macro generate_schema_name(custom_schema_name, custom_sc_model) %}
+  {% if pr_sc is not none %}
+    {{ pr_sc }} use schema pr_sc
+  {% else %}
+    {{ target.schema }}
+  {% endif %}
+{% endmacro %}
+
+---dbt run test1.sql
+select 1 id 
+{% macro generate_schema_name(none, test1) %}
+  {% if none is not none %} 
+    {{ custom_schema_name }}
+  {% else %}
+    {{ target.schema }} use schema DBT_DEV_SC
+  {% endif %}
+{% endmacro %}
+
+Ex:
+model/tr.sql
+--customized database object
+{{
+    config(
+        schema='ab_sc'
+    )
+}}
+select 1 id 
+
+13:39:17 On model.my_new_project.tr: create or replace   view DBT_DEV.ab_sc.tr
+  
+  as (
+    
+select 1 id
+  )
+  
+EX: defalut sc
+
+model/test11.sql
+--defalut schema
+select 1 id 
+
+13:39:17 On model.my_new_project.tr: create or replace   view DBT_DEV.DBT_DEV_SC.tr
+  
+  as (
+    
+select 1 id
+  )
+model/f.sql
+{{
+    config(
+        database='AADHAR_DEV_DB',
+        schema='AADHAR_DEV_SC'
+    )
+}}
+SELECT 1 ID 
+
+dbt run -m f.sql
+
+AADHAR_DEV_DB.AADHAR_DEV_SC.f
+
+
+{% macro generate_database_name(custom_schema_name, node) %}
+  {% if custom_schema_name is not none %}
+    {{ custom_schema_name }}
+  {% else %}
+    {{ target.database }}
+  {% endif %}
+{% endmacro %}
+
+--macros : reusablity purpose (sp)
+--models for reference another model purpose.
+
+100 models --- demo_sc -1 model , raw_sc --1 model , dev_sc -- 1 model 
+datashare --
+
+	  
+use database DBT_DEV  
+create schema ds;
+
+CREATE TABLE sales_details (
+    id INT,
+    country VARCHAR(50),
+    sales_amount DECIMAL(10, 2),
+    sales_date DATE,
+    product_name VARCHAR(100)
+);
+INSERT INTO sales_details (id, country, sales_amount, sales_date, product_name)
+VALUES 
+    (1, 'India',      1500.75, '2024-01-15', 'Product A'),
+    (2, 'Australia',  2500.00, '2024-02-20', 'Product B'),
+    (3, 'America',    3400.50, '2024-03-10', 'Product C'),
+    (4, 'India',      2200.25, '2024-04-05', 'Product D'),
+    (5, 'Australia',  3000.10, '2024-05-12', 'Product E'),
+    (6, 'America',    4100.75, '2024-06-18', 'Product F'),
+    (7, 'India',      1300.40, '2024-07-22', 'Product G'),
+    (8, 'Australia',  2900.65, '2024-08-30', 'Product H'),
+    (9, 'America',    3600.80, '2024-09-15', 'Product I');
+
+    select * from DBT_DEV.DS.sales_details
+
+
+sourcess.YML
+
+sources:
+  - name: srcc          # Source name
+    database: AADHAR_DEV_DB    # Snowflake database name
+    schema: AADHAR_DEV_SC  # Snowflake schema name
+    tables:
+      - name: PERSONS
+  - name: d_db        # Source name
+    database: DBT_DEV    # Snowflake database name
+    schema: ds  # Snowflake schema name
+    tables:
+      - name: sales_details   # Table name in source schema
+	  
+select * from {{ source('d_db', 'sales_details') }}
+
+select * from DBT_DEV.ds.sales_details --COMPILE FROM DBT 
+DATA FROM SNOWLAKE --PREVIEW
+
+
+
+--dbt_project.yml
+-->global variable
+vars:
+  country_name: 'India'
+  country_name1: '''America'''
+
+
+--apply transformation like regexp_replace and null and trim by uisng local & global variable  
+
+model/sale_stage.sql
+
+{% set country_name ='India' %}
+select *,{{ var('country_name1') }}
+ from {{ source('d_db', 'sales_details') }}
+where (country ='{{country_name}}'
+ or
+ country = '{{var('country_name')}})'
+ or
+ country= {{ var('country_name1') }}}
+ 
+----------------------------------------
+{{
+    config(
+        materialized='table',
+        schema='ds',
+        query_tag='pp',
+        alias='ppp'
+    )
+}}
+{% set country_name ='India' %}
+select * ,{{ var('country_name1') }} nm
+ from {{ source('d_db', 'sales_details') }}
+where (country ='{{country_name}}'
+      or
+      country = '{{var('country_name')}}'
+      or
+      country= {{var('country_name1') }})
+	  
+ select '''praveen''' --> 'praveen'
+ 
+ 
+ select {{ var('country_name1') }},'{{ var('country_name') }}' --'country_name'  ex: column name : ramana 'ramana'
+ 
+ preview :
+
+ex:
+{{
+    config(
+        materialized='table', --view
+        query_tag='abc'
+    )
+}}
+select 1 id n
+--query_history ---> filter --> query_tag --> no warehouse
+--query_history ---> filter --> query_tag --> warehouse size x-small 
+
+Hooks:
+======
+PRE-HOOK:
+--before running a model i want to  some setup my own datawarehouse 
+POST-HOOK:
+--after running a model i want to Doof operations(insert/update/changes) some setup my own datawarehouse 
+
+auditing table ---> when job is started and when job is ended go for pre_hook and post_hook conecpt.
+for auditing purpose we go for pre_hook conecpt.
+insert/update auditing ---> DML,DDL,DCL -- by using MACRO and HOOKS (pre_hook and post_hook)
+SELECT -->DQL --> MODEL 
+
+INSERT INTO AUDIT_TABLE
+
+AFTER CREATION OF TABLES ==> I WANT TO  GRANT ACCESS ==> POST-HOOK
+AFTER CREATION OF TABLES ==> I WANT TO  DATA MASKING ==> POST-HOOK
+
+Before creating model I want to 
+
+TRUNCATE TABLE OR UPDATE TABLE ==> PRE_HOOK 
+
+PRE-HOOK:
+--------
+ex:
+{{
+    config(
+        materialized='table', --view
+        query_tag='abc'
+		pre_hook 
+    )
+}}
+select 1 id n
+
+model/emp_emp1.sql
+{{
+    config(
+        materialized='table',
+        query_tag='abc',
+        pre_hook=["USE WAREHOUSE DBT_L_WH"],
+        post_hook=["USE WAREHOUSE DBT_WH"]
+    )
+}}
+select 1 id 
+
+macro/set_warehouse.sql 
+
+{% macro set_warehouse(warehouse_name) %}
+    USE WAREHOUSE {{warehouse_name}};
+{% endmacro %}
+
+dbt_project.yml
+
+vars:
+  country_name: 'India'
+  country_name1: '''America'''
+  vwh: 'DBT_L_WH'
+  default_vwh: 'DBT_WH'
+  
+model/emp_emp1.sql
+
+{{
+    config(
+        materialized='table',
+        query_tag='abc',
+        pre_hook=["{{set_warehouse(var('vwh'))}}"],
+        post_hook=["{{set_warehouse(var('default_vwh'))}}"]
+    )
+}}
+select 1 id 
+
+
+{{
+    config(
+        materialized='table',
+        query_tag='abc',
+        pre_hook=["{{set_warehouse(var('vwh'))}}",UPDATE TABLE SET STATUS='STARTED'],
+        post_hook=["{{set_warehouse(var('default_vwh'))}}",UPDATE TABLE SET STATUS='COMPLETED']
+    )
+}}
+select 1 id 
+
+SCDS:
+-----
+SLOWLY CHANGING DIMENSIONS 
+
+SCD 0 ==> No Changes 
+SCD 1 ==> LATEST DATA (NO HISTORICAL DATA)
+SCD 2 ==> LATEST DATA + HISTORICAL DATA
+
+ID,NAME,CITY 
+1,PRAVEEN,HYD 
+
+SCD 2 
+-----
+ID,NAME,CITY,START_DATE,END_DATE,STATUS 
+1,PRAVEEN,PUNE,01-01-2025,NULL,YES
+1,PRAVEEN,HYD,01-01-2000,01-01-2025,NO
+
+SNAPSHOT:
+--------
+WE CAN HANDLE EASILY BY USING DBT WITH HELP OF SNAPSHOT
+
+A snapshot in dbt is used to capture slowly changing data from a source table over time. 
+It helps you track changes to rows when the source system updates data in-place.
+
+USECASE:
+-------
+When a source table overwrites values (like a customer table where address changes), but you need to know what the old address was.
+
+There are 2 snapshot strategies:
+
+1.Check Strategy
+2.Timestamp Strategy
+
+1.Check Strategy:
+-----------------
+--Compares specific columns to detect changes.
+--You specify which columns to watch for changes.
+--When any of those columns change, dbt inserts a new record into the snapshot table.
+
+Syntax
+         {% snapshot customer_snapshot %}
+  {{
+    config(
+      target_schema='snapshots',
+      unique_key='customer_id',
+      strategy='check',
+      check_cols=['address', 'phone_number']
+    )
+  }}
+
+  SELECT * FROM raw.customers
+
+{% endsnapshot %}
+
+Here:
+-If address or phone_number changes → a new version of the row is stored.
+-Good for tracking specific fields.
+
+
+2.Timestamp Strategy:
+--------------------
+--Compares rows using a last_updated timestamp column.
+--You specify a column like updated_at or last_modified.
+--dbt checks if that timestamp changed → if yes, a new row is saved.
+
+Syntax: 
+          
+		  {% snapshot customer_snapshot %}
+  {{
+    config(
+      target_schema='snapshots',
+      unique_key='customer_id',
+      strategy='timestamp',
+      updated_at='last_modified'
+    )
+  }}
+
+  SELECT * FROM raw.customers                 
+
+{% endsnapshot %}
+
+Here:
+   When last_modified changes → dbt takes a snapshot.
+
+Best for tables that use audit columns like updated_at.
+
+📊    Comparison
+Feature	           check strategy	         timestamp strategy
+How it detects	Compares column values	    Compares timestamp column
+Best for	     No updated_at field	    When there’s an updated_at
+Overhead	   Higher (compares fields) 	Lower (single timestamp field)
+Granularity	 Column-level change tracking	Row-level change tracking
+
+When to Use Which?
+✔ Use check
+→ If your source doesn’t have an updated_at column.
+→ You know which columns you want to track.
+
+✔ Use timestamp
+→ If your source has an updated_at or last_modified column.
+→ You only care about rows where anything has changed.
+
+
+CREATE OR REPLACE EMP_SOURCE(ID NUMBER,
+                             NAME VARCHAR,
+							 CITY VARCHAR)
+INSERT INTO EMP_SOURCE (1,'Ramana','hyd')
+
+select * from EMP_SOURCE
+
+1)CHECK:
+------
+Source.YML
+
+
+  - name: a2_db               # Second source
+    database: AADHAR_DB
+    schema: AADHAR_SC
+    tables:
+      - name: EMPLOYEE_T
+      - name: EMP_SOURCE
+        description: "Source table for customer data"
+
+snapshots/emp_snap_dtls.sq
+
+{% snapshot emp_snap_dtls %}
+    {{
+        config(
+            strategy='check',
+            unique_key='id',
+            check_cols=['city']
+        )
+    }}
+
+    SELECT *
+    FROM {{ source('a2_db', 'EMP_SOURCE') }}
+{% endsnapshot %}
+
+
+dbt snapshot --select emp_snap_dtls
+
+select * from DBT_DEV.DBT_DEV_SC.emp_snap_dtls
+
+result:
+
+ID	NAME	CITY	DBT_SCD_ID	                      DBT_UPDATED_AT	           DBT_VALID_FROM	      DBT_VALID_TO
+1	Ramana	Hyd	   fafc4f1ab95c2bf870c4aef14a78f0b2	2025-07-11T11:38:42.467Z	2025-07-11T11:38:42.467Z	null
+
+--update
+UPDATE EMP_SOURCE SET CITY='PUNE'
+UPDATE EMP_SOURCE SET CITY='CHN'
+
+dbt snapshot --select emp_snap_dtls
+
+select * from DBT_DEV.DBT_DEV_SC.emp_snap_dtls
+
+
+USE WAREHOUSE DBT_L_WH;
+
+-- Create the table
+CREATE OR REPLACE TABLE EMP_SOURCE (
+    ID NUMBER,
+    NAME VARCHAR,
+    CITY VARCHAR
+);
+
+-- Insert values
+INSERT INTO EMP_SOURCE (ID, NAME, CITY) 
+VALUES (1, 'Ramana', 'Hyd');
+
+select * from EMP_SOURCE
+--update
+UPDATE EMP_SOURCE SET CITY='PUNE'
+UPDATE EMP_SOURCE SET CITY='CHN'
+
+select * from DBT_DEV.DBT_DEV_SC.EMP_SNAP_DTLS
+
+-- Create the table
+CREATE OR REPLACE TABLE AADHAR_DB.AADHAR_SC.EPFO (
+    ID NUMBER,
+    NAME VARCHAR,
+    ORGANIZATION VARCHAR
+);
+
+-- Insert values
+INSERT INTO AADHAR_DB.AADHAR_SC.EPFO (ID, NAME, ORGANIZATION) 
+VALUES (1, 'Praveen', 'HCL');
+
+INSERT INTO AADHAR_DB.AADHAR_SC.EPFO (ID, NAME, ORGANIZATION) 
+VALUES (2, 'Kumar', 'TCS');
+
+SELECT * FROM AADHAR_DB.AADHAR_SC.EPFO
+
+CREATE DATABASE SNAP_DB;
+CREATE SCHEMA SNAP_SC;
+
+SELECT * FROM AADHAR_DB.AADHAR_SC.EPFO
+
+SELECT * FROM SNAP_DB.SNAP_SC.emp_01_snap
+
+UPDATE EPFO SET ORGANIZATION='CGI'WHERE ID=1
+
+SELECT * FROM SNAP_DB.SNAP_SC.emp_02_snap
+
+
+INSERT INTO AADHAR_DB.AADHAR_SC.EPFO (ID, NAME, ORGANIZATION) 
+VALUES (3, 'Ravi', 'CGP');
+
+SELECT * FROM SNAP_DB.SNAP_SC.emp_02_snap
+
+UPDATE EPFO SET ORGANIZATION='PWC'WHERE ID=3
+
+DELETE FROM AADHAR_DB.AADHAR_SC.EPFO
+ WHERE ID=2
+
+ SELECT * FROM AADHAR_DB.AADHAR_SC.EPFO
+
+
+
+  - name: a2_db               # Second source
+    database: AADHAR_DB
+    schema: AADHAR_SC
+    tables:
+      - name: EMPLOYEE_T
+      - name: EMP_SOURCE
+      - name: EPFO
+        description: "Source table for customer data"
+		
+snapshot/emp_01_snap.sql
+{% snapshot emp_01_snap %}
+    {{
+        config(
+            target_schema='SNAP_SC',
+            target_database='SNAP_DB',
+            unique_key='id',
+            strategy='check',
+            check_cols =['ORGANIZATION'],
+            invalidate_hard_deletes=False,
+        )
+    }}
+
+    select * from {{ source('a2_db', 'EPFO') }}
+ {% endsnapshot %}
+ 
+snapshot/emp_02_snap.sql
+
+{% snapshot emp_01_snap %}
+    {{
+        config(
+            target_schema='SNAP_SC',
+            target_database='SNAP_DB',
+            unique_key='id',
+            strategy='check',
+            check_cols =['ORGANIZATION'],
+            invalidate_hard_deletes=True,
+        )
+    }}
+
+    select * from {{ source('a2_db', 'EPFO') }}
+ {% endsnapshot %}
+ 
+ 
+-by defalut dbt will be igore deleted records
+invalidate_hard_deletes =false
+-if i want to  track ==>
+invalidate_hard_deletes =false
+
+DBT Materializatios:
+====================
+1.Tables(Config macro or folder level) MODULARITY
+2.View
+3.Incremental
+4.Ephemeral
+5.Materialized view
+
+1.TABLES
+2.view
+
+3.INCREMENTAL: 
+-------------
+we are taking incremental data putting in Temporary view and insert data 
+we are taking latest data, we can improve the performance.
+date column or auto increment column must  
+compute cost + storage cost will be reduce
+
+--Temporary view created and results will be stored and loaded in target table.
+Today -- 400 customers 
+Tmrw -- 2 customer came (401,402) based on cust_id
+most of the time we go for date column 
+
+APPEND -- HYD TRANSFOR CHN --- > MERGE/APPEND ==Strategy
+model/sales_stg_incr.sql
+{{
+    config(
+        materialized='incremental'
+    )
+}}
+select * from {{ source('a2_db', 'sales') }}
+{% if is_incremental() %}
+    -- this filter will only be applied on an incremental run
+    where last_modified_date > (select max(last_modified_date) from {{ this }}) 
+{% endif %}
+
+{{this}}} ---> reference from current model DBT_DEV.DBT_DEV_SC.sales_stg_incr(object full qualified)
+
+MERGE 
+APPEND 
+DELETE 
+
+EX: CONFIG PERMANENT  table/view -- time travel cost + fail safe cost +compute cost + storage cost  --draw backs Over come incr materialization property 
+CREATE TABLE CUSTOMER_T (ID NUMBER , NAME VARCHAR)
+INSERT INTO VALUES(1,'ABC'),(2,'CDE')
+INSERT INTO VALUES(3,'ABC'),(4,'CDE')
+INSERT INTO VALUES(5,'ABC'),(6,'CDE')
+
+FIRST TIME RUN
+CUSTOMER_T -- 1 2 3 4 5 
+CUST_STG.SQL --- 1 2 3 4 5 
+SELECT MAX(ID) FROM CUST_STG ==> 5 
+CUSTOMER_T => 6 5>6 
+
+snowflake USING MERGE COMMAND CREATED STREAM 
+HERE DBT CREATE OR REPLACE  CREATE TEMP VIEW  FROM  dbt_temp from SALES(SOURCE TABLE)  AND INSERT DATA INTO MAIN TABLE FROM dbt_temp view  TABLE.
+VIEW <===FROM === SALES 
+MAIN <===FROM === VIEW 
+
+4.ephemeral:
+---------
+when i run a model (table or view ) obejct is created in DBT_DEV.DBT_DEV_SC.emp67
+Ephemeral:
+when i created Ephemeral no obejct created in snowflake its created CTE in dbt, we can referel in model 
+
+
+model/emp67.sql 
+----------------
+{{
+    config(
+        materialized='table',
+		transient=false
+    )
+}}
+select 1 id
+
+
+model/ephemeral.sql
+-------------------
+{{
+    config(
+        materialized='ephemeral',
+    )
+}}
+select 1 id
+
+--------------------------------------------------
+
+table:
+select * from {{ ref('emp67') }} --select * from DBT_DEV.DBT_DEV_SC.emp67
+
+select * from {{ ref('ephemeral') }}
+compile
+
+with __dbt__cte__ephemeral as (
+
+select 1 id
+) select * from __dbt__cte__ephemeral
+
+
+  - name: a2_db               # Second source
+    database: AADHAR_DB
+    schema: AADHAR_SC
+    tables:
+      - name: EMPLOYEE_T
+      - name: EMP_SOURCE
+      - name: EPFO
+      - name: sales
+    description: "Source table for customer data"
+	
+model/stage_sales_ephemeral.sql
+
+select * from {{ source('a2_db', 'sales') }}
+
+emp_table ---1 million rows
+2nd day -- 100 rows
+
+dropping existing table??
+create or replace table 
+
+compute cost + storage 
++
+insert data
+
+if i want to load only 100 rows/latest records what can i do?? ---- incremental data 
+
+============================================================================================================
+ORACLE DB ===> ACCESS ==> RAW_SC , DEV_SC, TEST_SC ===> SOURCE.YML
+TRANSFORMATION LOGIC ===> MODELS 
+REUSABILITY CODE     ===> MACROS 
+GRANT ACCESS/DATA MASKING ===> HOOKS BEFORE/AFTER ACCESS 
+IN MODEL I WANT TO REFER SOME VARIABLES ===> variables 
+INCREMENTAL ==> INCREMENTAL concept
+HISTORICAL TRACK CHANGES ===> SNAPSHOT 
+I WANT TO DIFFERENT MODEL ===> REF FUNCTION 
+CSV DATA LOOKUP TABLES ===> SEEDS ?? REF FUNCTION
+DATA_TYPES ===> SEEDS.YML
+MY OWN DATABASE AND SCHEMA ===> CUSTOMERIZATION
+FOLDER LEVEL ==> dbt_project.yml (MODULARITY)
+
+MY OWN NAME ===> ALIAS 
+TRACK QUERY ==> QUERY_TAG
+
+DATA LINEAGE 
+-----------
+up-steam    ===> +model_name
+down-steam  ===> model_name+
++model_name+
+
+MEDALIAN ARCHITECTURE :
+----------------------
+BRONZE ===> TRANSIENT 
+SILVER ===> TRANSIENT 
+GOLD  ===> PERMENENT
+PRESENT LAYER ---> VIEWS 
+AI ML  DS ===> DATA UNLOAD 
+
+SELECT ===> MODELS 
+DDL/DML ===> MACROS/HOOKS
+
+DATA LOAD IN DBT OR SNOWFLAKE  ===> DBT MACROS 
+
+NORMAL VIEW AND SECURE VIEW ===> CONFIG 
+MV MATERIALIZATION VIEW ===> HOOKS/MACROS
+PERMANENT TABLE OR TRANSIENT TABLES ===> CONFIG
+TEMPORARY TABLE OR  EXTERNAL TABLE ===> MACROS OR HOOKS 
+
+QUALIFY:
+--------
+SELECT * FROM EMP
+ SELECT SAL,
+ DENSE_RANK() OVER (ORDER BY SAL DESC) DN 
+ FROM EMP 
+ WHERE DN=3; --Window function [DENSE_RANK() OVER (ORDER BY EMP.SAL DESC NULLS FIRST)] appears outside of SELECT, QUALIFY, and ORDER BY clauses.
+
+-----------------------------------
+SELECT SAL,
+ DENSE_RANK() OVER (ORDER BY SAL DESC) DN 
+ FROM EMP
+ WHERE SAL= 1250; --static 
+-----------------------------------
+
+SELECT * FROM (
+SELECT SAL,
+ DENSE_RANK() OVER (ORDER BY SAL DESC) DN 
+ FROM EMP )
+ WHERE DN =3
+ 
+-I want to filter analytical functions in Snowflake with help of qualify function. 
+
+ select *,
+  dense_rank()over (order by sal desc) rn
+  from emp
+  qualify rn=3 ---2975.00 
+
+DATA QUALITY 
+DATA INTERGRTY
+DATA ACCURACY
+
+DBT TEST:
+1.SINGULAR TEST
+2.GENERIC TEST
+
+1.SINGULAR TEST:
+ ONLY FOR 1 MODEL OR 1 BUSINESS USE CASE 
+
+2.GENERIC TEST:
+REUSABILITY
+PREBUILTIN ==> UNIQUE,NOT NULL, ACCEPTED VALUES, RELATIONSHIP
+CUSTOM
+
+COMPILE -- DBT
+REVIEW -- SNOWFLAKE
+
+dbt snapshot -m snapshot_name
+dbt run -m model_name
+dbt run-operation macro_name 
+dbt test -m test_name
+dbt run 
+
+TEST: 
+
+CREATE TABLE sales_tbl (
+    id INT PRIMARY KEY,
+    revenue DECIMAL(10, 2) NOT NULL,
+    order_date DATE NOT NULL,
+    ship_date DATE,
+    last_modified_date TIMESTAMP
+);
+
+INSERT INTO sales_tbl (id, revenue, order_date, ship_date, last_modified_date)
+VALUES
+    (1, 2500.50, '2024-07-01', '2024-07-03', CURRENT_TIMESTAMP),
+    (2, 1500.75, '2024-07-02', '2024-07-05', CURRENT_TIMESTAMP);
+
+
+source.yml
+  - name: a3_db               # Third source
+    database: DBT_TEST
+    schema: DBT_SCHEMA
+    tables:
+      - name: SALES_TBL
+
+model/pizza_sales_stg.sql
+SELECT * FROM {{ source('a3_db', 'SALES_TBL') }}
+
+model/pizza_sales_stg_test.sql 
+
+
+
+--insert negative revenue(-3300.00)  row     
+INSERT INTO sales_tbl (id, revenue, order_date, ship_date, last_modified_date)
+VALUES
+    (4, -3300.00, '2024-07-03', '2024-07-06', CURRENT_TIMESTAMP)
+
+rerun 
+dbt test -m pizza_sales_stg_test 
+
+test/pizza_sales_stg_test.sql
+select * from {{ ref('pizza_sales_stg') }}
+where revenue < 0 -- Failure in test pizza_sales_stg_test (tests/pizza_sales_stg_test.sql)
+
+
+SELECT * FROM DBT_TEST.DBT_SCHEMA.sales_tbl
+
+select * from DBT_TEST.DBT_SCHEMA.sales_tbl 
+where revenue < 0; --2 rows 3,4 (nagative nevenue)
+
+select * from DBT_TEST.DBT_SCHEMA.sales_tbl 
+where  ship_date <order_date -- 0 rows
+
+test/pizza_sales_stg_test.sql
+select * from {{ ref('pizza_sales_stg') }}
+where ship_date <order_date --0 rows 
+
+
+INSERT INTO sales_tbl (id, revenue, order_date, ship_date, last_modified_date)
+VALUES
+    (5, 3300.00, '2024-07-03', '2024-07-06', CURRENT_TIMESTAMP) -- 0 ROWS  test cass pass 
+
+    
+INSERT INTO sales_tbl (id, revenue, order_date, ship_date, last_modified_date)
+VALUES
+    (5, 3300.00, '2024-07-03', '2024-06-06', CURRENT_TIMESTAMP) --Failure in test shipped_date_test (tests/shipped_date_test.sql)  2024-06-06 < 2024-07-06
+
+-manually	
+--DUPLICATE ROWS
+SELECT ID,COUNT(*)
+FROM SALES
+GROUP BY ID 
+HAVING COUNT(*)>1;
+
+--NULL values
+SELECT ID COUNT(*)
+FROM Sales
+WHERE ID IS Null
+GROUP BY ID;
+
+
+model/test_cases.yml
+
+models:
+  - name: pizza_sales_stg
+    columns:
+      - name: id
+        tests: 
+          - unique
+          - not_null
+		  
+dbt test -m pizza_sales_stg
+
+dbt buid -m pizza_sales_stg
+
+dbt run  ---> compile + execute the model 
+dbt test ---> test cases 
+dbt build ---> dbt run + dbt test first run the model and run the test 
+ 
+ACCEPTED VALUE:
+---------------
+amazon
+ordered
+shipped
+delivered
+refund
+retrun 
+
+RELATIONSHIP:
+FIELD 
+FOREGIN KEY (1.CUSTOMER 2.ORDER ) without CUSTOMER reference we cant perform foregin key 
+
+
+models:
+  - name: pizza_sales_stg
+    columns:
+      - name: customer_id
+        tests:
+          - relationships:
+              to: ref('customers')
+              field: id
+
+
+  - name: a2_db               # Second source
+    database: AADHAR_DB
+    schema: AADHAR_SC
+    tables:
+      - name: EMPLOYEE_T
+      - name: EMP_SOURCE
+      - name: EPFO
+      - name: SALES
+      - name: USERS
+        description: "Source table for customer data"
+
+
+
+CREATE OR REPLACE TABLE USERS (
+    ID NUMBER, 
+    NAME VARCHAR, 
+    EMAIL VARCHAR
+);
+
+INSERT INTO USERS VALUES
+    (1, 'RAMANA', 'RAMANA@GMAIL.COM'),
+    (2, 'MANYA', 'MANYA@GMAIL.COM');
+
+SELECT * FROM AADHAR_DB.AADHAR_SC.USERS
+
+--check email properly or not 
+SELECT * FROM AADHAR_DB.AADHAR_SC.USERS
+where email not like '%@%'		
+model/users_stg.sql
+
+
+SELECT * FROM {{ source('a2_db', 'USERS') }}
+
+model/test_cases.yml
+models:
+  - name: pizza_sales_stg
+    columns:
+      - name: id
+        tests:
+          - unique
+          - not_null
+          - accepted_values:
+              values: ['1','2']
+
+  - name: users_stg
+    columns:
+      - name: id
+        tests:
+          - unique
+          - not_null
+          
+composite key  Concat
+
+select col1||col2||col3 from {{source('source_name','obejct_name')}}
+
+--check email properly or not 
+SELECT * FROM AADHAR_DB.AADHAR_SC.USERS
+where email not like '%@%'
+
+
+--check email properly or not 
+SELECT * FROM AADHAR_DB.AADHAR_SC.CUSTOMER_T
+where email_id not like '%@%'
+
+
+--check email properly or not 
+SELECT * FROM AADHAR_DB.AADHAR_SC.DEPT
+where gmail not like '%@%'
+
+
+--check email properly or not 
+SELECT * FROM AADHAR_DB.AADHAR_SC.ACCOUNT_T
+where gmail not like '%@%'
+
+SELECT * FROM {{model}}
+where {{column_name}} not like '%@%'
+
+--FULL QUALIFIED
+
+models/source.yml
+
+  - name: a3_db               # Third source
+    database: DBT_TEST
+    schema: DBT_SCHEMA
+    tables:
+      - name: SALES_TBL
+      - name: USERS
+
+models/users_stage.sql
+
+select * from {{ source('a3_db', 'USERS') }}
+
+--execute tes cases:case_tests.yml
+models/test_cases.yml
+
+models:
+  - name: pizza_sales_stg
+    columns:
+      - name: id
+        tests:
+          - unique
+          - not_null
+          - accepted_values:
+              values: ['1','2']
+  - name: users_stage
+    columns:
+      - name: id
+        tests:
+          - unique
+          - not_null
+      - name: email
+        tests: 
+          - validate_email
+
+dbt build -m users_stage
+
+macros/validate_email.sql
+
+{% test validate_email(model,column_name) %}   
+  SELECT * FROM {{model}} --model: users_stage
+  where {{column_name}} NOT LIKE '%@%' --column_name : email
+{% endtest %}
+---------------------------
+  SELECT * FROM  users_stage
+  where EMAIL NOT LIKE '%@%'
+---------------------------
+
+
+--add duplicate record
+INSERT INTO USERS VALUES
+    (2, 'MANYA', 'MANYA@GMAIL.COM');
+
+SELECT * FROM DBT_TEST.DBT_SCHEMA.USERS -- 3 rows
+
+-- 111 
+select *,
+rank()over(partition by id order by id) k 
+from users 
+-- 111 
+select *,
+dense_rank()over(partition by id order by id) k 
+from users 
+
+-- row_number  1 1 2
+select *,
+row_number()over(partition by id order by id) k 
+from users 
+--qualify
+select *,
+row_number()over(partition by id order by id) k 
+from users 
+qualify k>1; -- 2	MANYA	MANYA@GMAIL.COM	 row_number-2
+
+select *,
+from users 
+qualify row_number()over(partition by id order by id)>1;
+
+--unique records 
+select *,
+from users 
+qualify row_number()over(partition by id order by id)=1;
+
+--duplicate records 
+select *,
+from users 
+qualify row_number()over(partition by id order by id)>1;
+
+--my current company to find the duplicate records and implemented test cases i have returned customerized testcases.
+
+generic test ===> yml ==> build model 
+
+create table any dbt and schema ===> source.yml ===> cehck source data model (users_stage.sql)==>models/test_cases.yml ===> validate_email.sql(macro) ==> dbt build -m users_stage.sql
+
+source.yml --> model --> run model(users_stg.sql)  ---> macro(test name )--> test_cases.yml ---> dbt build/test users_stg
+||
+models/source.yml
+  - name: a4_db               # Third source
+    database: AADHAR_DEV_DB
+    schema: AADHAR_DEV_SC
+    tables:
+      - name: SALES_TBL
+	  ||
+	  
+models/pizza_sales_stg.sql
+SELECT * FROM {{ source('a4_db', 'SALES_TBL') }}
+||
+
+-------------------------------------SINGULAR TEST --------------------------
+tests/pizza_sales_stg_test.sql
+
+SELECT * FROM {{ ref('pizza_sales_stg') }}
+where revenue < 0 
+
+||
+select * from {{ ref('pizza_sales_stg') }}
+where ship_date < order_date
+
+||
+dbt test -m pizza_sales_stg
+
+model/test_cases.yml
+
+models:
+  - name: pizza_sales_stg
+    columns:
+      - name: id
+        tests:
+          - unique
+          - not_null
+          - accepted_values:
+              values: ['1','2']
+		  - duplicate_check_test --REUSABILITY
+
+creatae table users 
+||
+models/source.yml
+
+  - name: a3_db               # Third source
+    database: DBT_TEST
+    schema: DBT_SCHEMA
+    tables:
+      - name: SALES_TBL
+      - name: USERS
+||
+select * from {{ source('a3_db', 'USERS') }}
+
+macros/validate_email.sql
+
+||
+{% test validate_email(model,column_name) %}   
+  SELECT * FROM {{model}}
+  where {{column_name}} NOT LIKE '%@%'
+{% endtest %}
+
+models/test_cases.yml
+
+- name: users_stage
+    columns:
+      - name: id
+        tests:
+          - unique
+          - not_null
+ - name: email
+        tests: 
+          - validate_email --model validate_email
+------------------------------------------------------run model --------
+dbt build -m users_stage
+=========================================================================		  
+--DUPLICATE ROWS 
+=========================================================================		
+SNOWFLAKE
+
+--unique records 
+select *,
+from users 
+qualify row_number()over(partition by id order by id)=1;
+
+--duplicate records 
+select *,
+from users 
+qualify row_number()over(partition by id order by id)>1;
+
+model : users_stage 
+-----------------------------------------------------------macros/duplicate_check_test.sql -------Custom Geneic Test------------------------------
+{% test duplicate_check_test(model,column_name) %}
+    select *,
+from {{model}} 
+qualify row_number()over(partition by {{column_name}} order by {{column_name}})>1
+{% endtest %}
+
+
+ - name: users_stage
+    columns:
+      - name: id
+        tests:
+          - unique
+          - not_null
+          - duplicate_check_test
+      - name: email
+        tests: 
+          - validate_email
+------------------------------------------------------run model --------
+dbt build -m users_stage
+-----------------------------------------------------------------
+
+
+RAW_SC 
+(DUPLICATE RECORDS 1 1 2 )  --->   STG_SC 
+                                    (UNIQUE RECORDS 1 2 )
+ 
+----UNIQUE RECORDS 
+
+SNOWFLAKE
+
+select *,
+from users 
+qualify row_number()over(partition by id order by id)=1;
+
+
+models/users_stg_uniq.sql
+select * from {{ source('a3_db', 'USERS') }}
+qualify row_number()over(partition by id order by id)=1 
+
+dbt run -m users_stg_unique.sql
+SELECT * FROM DBT_DEV.DBT_DEV_SC.users_stg_unique -- 2 unique records Snowflake object
+
+HOW TO EXECUTE ALL GENERIC TEST CASES
+dbt test -m test_type:generic
+===================================
+    DBT PACKAGES:
+===================================
+PACKAGE.YML
+dbt give a packages just import and rull the dependencies commands and reusage functionallity purpose. 
+java import java.io.* 
+
+DBT PACKAGE: IT IS A PRE-BUILTIN  DBT PROJECTS THAT CONTAINS MACORS AND TEST CASES 
+--REUSABILITY
+dbt package hub--hub.getdbt.com
+1.dbt utils
+2.codegen
+3.audit_helper
+4.dbt_project_evaluator
+5.dbt_external_tables
+6.dbt_expectations
+
+1.dbt utils
+
+Installation
+packages:
+  - package: dbt-labs/dbt_utils
+    version: 1.3.0
+packages.YML
+
+dbt deps
+
+Dedeplicates(source)
+====================
+models/user_stg_pkg.sql
+
+{{ dbt_utils.deduplicate(
+    relation=source('a3_db', 'USERS'),
+    partition_by='id',
+    order_by="id desc",
+   )
+}}
+
+dbt run -m user_stg_pkg
+------------------------------
+models/users_stg_uniq.sql
+
+select * from {{ source('a3_db', 'USERS') }}
+qualify row_number()over(partition by id order by id)=1 
+-------------------------------------------------------------
+
+create or replace   view DBT_DEV.DBT_DEV_SC.user_stg_pkg
+  
+ 
+  as (
+    select *
+    from DBT_TEST.DBT_SCHEMA.USERS
+    qualify
+        row_number() over (
+            partition by id
+            order by id desc
+        ) = 1
+  )
+  -------------------------------
+ BY DEFAULT MATERIALIZATION PROPERTY ITS A NORMAL VIEW 
+  1.View   ---NORMAL VIEW AND SECURE VIEW DATABASE OBEJECTED CREATED
+  2.Table   ---TRANSIENT AND PERMANENT DATABASE OBEJECTED CREATED
+  3.INCREMENTAL
+  4.Ephemeral : NO DATABASE OBJECT IS CREATED IN THE DATA PLATFOEM. ITS CREATED CTE NO physcial database obejct created.
+
+view/table: PHYSCIAL DATABASE OBEJECTED CREATION
+Ephemeral: NO PHYSCIAL DATABASE OBJECT CREATION
+
+I HAVE 100 LINES OF CODE 
+100 LINES OF CODE I WANT TO REUSE IN DIFFERENT MODELS WITH HELP OF EPHEMERAL.
+
+CAN WE USE THE EPHEMERAL IN OUR MODELS 
+CAN WE PERFORM JOINS ON THE MODELS ? YES 
+
+model/emp67.sql 
+----------------
+{{
+    config(
+        materialized='table',
+		transient=false
+    )
+}}
+select 1 id   
+   select * from {{ref('emp67')}}} -- COMPILE CTE 
+   
+I want to my own database and schema -- customerized schema draback of customerized schema is depending on tagert schema.
+
+
+dbt_utils --- reusable macros
+dbt_expectations -- test cases 
+
+
+SELECT * FROM DBT_TEST.DBT_SCHEMA.USERS_T;
+
+--add new column
+ALTER TABLE USERS_T ADD PHONE NUMBER DEFAULT 9537736363
+
+
+--test cases in snowflake 
+
+SELECT * FROM DBT_TEST.DBT_SCHEMA.USERS_T
+WHERE  length(PHONE)<>10;
+
+version: 2
+
+models:
+  - name: users_stgg
+    columns:
+      - name: phone
+        tests:
+          - unique
+          - not_null
+          - dbt_expectations.expect_column_value_lengths_to_equal:
+              value: 10
+
+
+dbt test-m users_stgg
+
+
+dbt build-m users_stgg
+
+example:
+
+
+SELECT * FROM DBT_TEST.DBT_SCHEMA.USERS_T;
+
+--add new column
+ALTER TABLE USERS_T ADD PHONE NUMBER DEFAULT 9537736363
+
+--length of phone =10 digits 
+SELECT * FROM DBT_TEST.DBT_SCHEMA.USERS_T
+WHERE  length(PHONE)<>10;
+
+select count(*) from DBT_TEST.DBT_SCHEMA.USERS_T
+where length(phone)<>10 
+having count(*)>0;
+
+souce.yml
+- name: a3_db               # Third source
+    database: DBT_TEST
+    schema: DBT_SCHEMA
+    tables:
+      - name: SALES_TBL
+      - name: USERS
+      - name: USERS_T
+
+models/users_1_stg.sql
+
+ select * from {{ source('a3_db', 'USERS_T') }}
+qualify row_number()over(partition by id order by id)=1
+
+------------------------------------------------
+- select * from {{ source('a3_db', 'USERS_T') }}
+--SELECT * FROM DBT_TEST.DBT_SCHEMA.USERS_T
+WHERE  length(PHONE)<>10;
+-----------------------------------------------
+dbt run -m users_1_stg
+
+models/users_stg_package.sql
+
+{{ dbt_utils.deduplicate(
+    relation=source('a3_db', 'USERS_T'),
+    partition_by='id',
+    order_by="id desc",
+   )
+}}
+
+models/users_stg_tes_casess.yml
+version: 2
+
+models:
+  - name: users_1_stg
+    columns:
+      - name: phone
+        tests:
+          - unique
+          - not_null
+          - dbt_expectations.expect_column_value_lengths_to_equal:
+              value: 10
+dbt test -m users_1_stg
+or dbt build -m users_1_stg
+
+--CODE GEN: 
+
+souce.yml
+- name: a3_db               # Third source
+    database: DBT_TEST
+    schema: DBT_SCHEMA
+    tables:
+      - name: SALES_TBL
+      - name: USERS
+      - name: USERS_T 
+	  ----
+	  -----
+	  ----
+	  - name: tbl_100 its manually not possible go for code gen
+
+packages:
+  - package: dbt-labs/codegen
+    version: 0.13.1
+dbt deps
+
+{{ codegen.generate_source(schema_name='DBT_SCHEMA', database_name='DBT_TEST',include_schema=true,name= 'ram') }}
+
+version: 2
+
+model/sources.yml
+
+version: 2
+
+sources:
+  - name: ram
+    database: dbt_test
+    schema: dbt_schema
+    tables:
+      - name: country
+      - name: department
+      - name: emp
+      - name: employees
+      - name: job
+      - name: job_history
+      - name: location
+      - name: mat_incremental
+      - name: mat_incrmental_updated_ts
+      - name: mat_tbl
+      - name: mat_view
+      - name: materialized_mat_incremental
+      - name: materialized_mat_view
+      - name: my_first_dbt_model
+      - name: my_second_dbt_model
+      - name: orders
+      - name: region
+      - name: sales_tbl
+      - name: users
+      - name: users_t
+
+  - name: ram_n
+    database: event
+    schema: evt_sch
+    tables:
+      - name: sales_data
+
+i want to refer this obejct 
+
+select* from {{ source('ram', 'region') }} --compile
+
+select* from dbt_test.dbt_schema.region -- full qualified obejct
+select * from event.evt_sch.sales_data
