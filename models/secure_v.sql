@@ -4,4 +4,4 @@
         secure =true
     )
 }}
-select 1 id
+select 1 id,'raju' name
